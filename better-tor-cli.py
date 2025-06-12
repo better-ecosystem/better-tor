@@ -17,7 +17,7 @@ from json import load
 from urllib.request import urlopen
 from urllib.error import URLError
 from time import sleep
-
+from shutil import which
 
 class TorIptables:
 
@@ -129,6 +129,26 @@ DNSPort %s
     from subprocess import getoutput
     rules = getoutput('iptables -t nat -S')
     return f"--to-ports {self.trans_port}" in rules
+
+
+# Check if tor is installed, else instruct user to install
+if which('tor') is None:
+    # Detect package manager
+    pkgman = None
+    if which('pacman'):
+        pkgman = 'pacman'
+        install_cmd = 'sudo pacman -S tor'
+    elif which('apt'):
+        pkgman = 'apt'
+        install_cmd = 'sudo apt update && sudo apt install tor'
+    elif which('rpm'):
+        pkgman = 'rpm'
+        install_cmd = 'sudo rpm -i tor'
+    else:
+        install_cmd = 'Please install tor using your system package manager.'
+    print(f"\033[91m[!] 'tor' is not installed.\033[0m")
+    print(f"\033[93mTo install tor, run:\033[0m\n  {install_cmd}")
+    exit(1)
 
 
 if __name__ == '__main__':
