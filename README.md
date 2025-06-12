@@ -33,4 +33,18 @@ A graphical user interface (GUI) is planned for future development. The GUI will
 
 ---
 
+## ⚠️ Risks, Limitations, and Disclaimer
+
+**Using Tor in this way does not guarantee 100% anonymity or security.**
+- Misconfiguration, software leaks, or system vulnerabilities may expose your real IP address or other identifying information.
+- DNS leaks, application-level leaks, or improper firewall rules can compromise your privacy.
+- Some applications may bypass system iptables rules or use protocols not supported by Tor.
+- This script is provided as-is, with no guarantee of security or fitness for any particular purpose.
+
+**You are solely responsible for your own security and privacy.**
+- The authors and contributors of this project are **not responsible** for any consequences, damages, or legal issues resulting from the use or misuse of this script.
+- Always review and understand the risks before using tools that modify your network stack or claim to provide anonymity.
+
+---
+
 *Based on the [toriptables3](https://github.com/ruped24/toriptables3) script by Ruped24.*
