@@ -1,0 +1,15 @@
+# Rust build output
+/target/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# VS Code settings
+.vscode/
+
+# Misc
+*.log
+*.tmp
+*.swp
+.DS_Store

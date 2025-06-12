@@ -28,8 +28,8 @@ Example commands:
 - Tor installed and running as a system service
 - Root privileges
 
-## GUI (Coming Soon)
-A graphical user interface (GUI) is planned for future development. The GUI will use this CLI script under the hood to provide a more user-friendly experience.
+## GUI
+A graphical user interface (GUI) **already exists**, but it is in very early development and has a lot of bugs to be solved. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
 
 ---
 

@@ -1,0 +1,9 @@
+[package]
+name = "better-tor-gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gtk4 = "0.9"
+libadwaita = "0.7"
+tokio = { version = "1.0", features = ["full"] }
