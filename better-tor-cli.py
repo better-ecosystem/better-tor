@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The Better Ecosystem Tor CLI script (only supports arch for now).
+The Better Ecosystem Tor CLI script.
 The GUI (still in early development) will use this script under the hood.
 
 Based on the toriptables3 script by Ruped24:
@@ -30,13 +30,16 @@ class TorIptables:
     self.non_tor_net_ipv6 = ["fc00::/7", "fe80::/10", "fec0::/10", "ff00::/8"]
     self.non_tor = ["127.0.0.0/9", "127.128.0.0/10", "127.0.0.0/8"]
     self.non_tor_ipv6 = ["::1/128", "::ffff:0:0/96"]
-    try:
-        self.tor_uid = getoutput("id -ur tor").strip()
-        if not self.tor_uid:
-            print("\\033[91m[!] Failed to get UID for 'tor' user. Make sure 'tor' user exists and 'id -ur tor' command works.\\033[0m")
-            exit(1)
-    except Exception as e:
-        print(f"\\033[91m[!] Error getting 'tor' user UID: {e}\\033[0m")
+    self.tor_uid = None
+    user_candidates = ["tor", "debian-tor", "toranon"]
+    for user in user_candidates:
+        uid = getoutput(f"id -ur {user}").strip()
+        if uid:
+            self.tor_uid = uid
+            self.tor_user = user
+            break
+    if not self.tor_uid:
+        print("\033[91m[!] Failed to get UID for a Tor user. Tried: 'tor', 'debian-tor', 'toranon'. Make sure one of these users exists and 'id -ur <user>' works.\033[0m")
         exit(1)
     self.trans_port = "9040"
     self.tor_config_file = '/etc/tor/torrc'

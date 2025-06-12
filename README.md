@@ -1,6 +1,6 @@
 # Better Tor CLI
 
-This project provides a command-line interface (CLI) script to route all your system's network traffic through the Tor network using iptables rules. It is currently designed for Arch Linux systems.
+This project provides a command-line interface (CLI) script to route all your system's network traffic through the Tor network using iptables rules.
 
 ## Features
 - **Load Tor iptables rules**: Redirects all outgoing traffic through Tor, anonymizing your network activity.
