@@ -39,7 +39,7 @@ class TorIptables:
             self.tor_user = user
             break
     if not self.tor_uid:
-        print("\033[91m[!] Failed to get UID for a Tor user. Tried: 'tor', 'debian-tor', 'toranon'. Make sure one of these users exists and 'id -ur <user>' works.\033[0m")
+        print("\033[91m[!] Failed to get UID for a Tor user. Tried: 'tor', 'debian-tor', 'toranon'. If tor uses another default user name on your distro, please open a bug report.\033[0m")
         exit(1)
     self.trans_port = "9040"
     self.tor_config_file = '/etc/tor/torrc'
