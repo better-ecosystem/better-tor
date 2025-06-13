@@ -1,5 +1,6 @@
 use std::process::Command;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 use gtk4::prelude::*;
 use gtk4::{Application, Button, Box, Orientation};
@@ -73,6 +74,20 @@ fn build_ui(app: &Application) {
         .halign(gtk4::Align::Center)
         .build();
 
+    // Create IP label (above the button)
+    let ip_label = Rc::new(gtk4::Label::builder()
+        .label("Seu IP é: ...")
+        .css_classes(vec!["title-3"])
+        .halign(gtk4::Align::Center)
+        .build());
+
+    // Fetch and update IP label
+    let ip_label_clone = ip_label.clone();
+    glib::MainContext::default().spawn_local(async move {
+        let ip = get_public_ip().await;
+        ip_label_clone.set_text(&format!("Seu IP é: {}", ip));
+    });
+
     // Check initial status
     let initial_status = check_tor_status(&cli_path);
     update_ui_for_status(&power_button, &status_label, initial_status);
@@ -82,24 +97,23 @@ fn build_ui(app: &Application) {
     let power_button_clone = power_button.clone();
     let status_label_clone = status_label.clone();
     let toast_overlay_clone = toast_overlay.clone();
+    let ip_label_for_closure = ip_label.clone(); // clone for closure only
     
     power_button.connect_clicked(move |_button| {
         let cli_path = cli_path_clone.clone();
         let button = power_button_clone.clone();
         let status_label = status_label_clone.clone();
         let toast_overlay = toast_overlay_clone.clone();
-        
+        let ip_label = ip_label_for_closure.clone(); // clone for async
         // Disable button during operation
         button.set_sensitive(false);
         button.set_icon_name("process-working-symbolic");
-        
         // Execute command in background
-        gtk4::glib::spawn_future_local(async move {
+        glib::MainContext::default().spawn_local(async move {
             let cli_path_for_task = cli_path.clone();
             let result = tokio::task::spawn_blocking(move || {
                 toggle_tor(&cli_path_for_task)
             }).await;
-            
             match result {
                 Ok(Ok(new_status)) => {
                     update_ui_for_status(&button, &status_label, new_status);
@@ -112,32 +126,28 @@ fn build_ui(app: &Application) {
                     toast_overlay.add_toast(toast);
                 },
                 Ok(Err(error)) => {
-                    // Reset button state on error
                     let current_status = check_tor_status(&cli_path);
                     update_ui_for_status(&button, &status_label, current_status);
-                    
-                    // Print the full error to the terminal for debugging
                     eprintln!("[Better Tor GUI] Error: {}", error);
-                    
-                    // Show a shortened error in the toast
                     let toast = Toast::new(&format!("Error: {}", error.chars().take(100).collect::<String>()));
                     toast_overlay.add_toast(toast);
                 },
                 Err(_) => {
-                    // Reset button state on panic
                     let current_status = check_tor_status(&cli_path);
                     update_ui_for_status(&button, &status_label, current_status);
-                    
                     let toast = Toast::new("An unexpected error occurred");
                     toast_overlay.add_toast(toast);
                 }
             }
-            
+            // Refetch and update IP after toggling
+            let ip = get_public_ip().await;
+            ip_label.set_text(&format!("Seu IP é: {}", ip));
             button.set_sensitive(true);
         });
     });
 
     // Add widgets to content box
+    content_box.append(ip_label.as_ref()); // Add IP label above button
     content_box.append(&power_button);
     content_box.append(&status_label);
 
@@ -223,4 +233,45 @@ fn update_ui_for_status(button: &Button, status_label: &gtk4::Label, is_active: 
         status_label.remove_css_class("success");
         status_label.add_css_class("error");
     }
+}
+
+// Add this async fn to fetch the public IP, using the same logic as the Python script
+async fn get_public_ip() -> String {
+    use reqwest::Client;
+    use std::time::Duration;
+    use tokio::time::sleep;
+
+    // Try check.torproject.org first, fallback to ident.me
+    let client = Client::builder()
+        .timeout(Duration::from_secs(5))
+        .build();
+    let client = match client {
+        Ok(c) => c,
+        Err(_) => return "Erro ao criar client".to_string(),
+    };
+    for _ in 0..12 {
+        match client.get("https://check.torproject.org/api/ip").send().await {
+            Ok(resp) => {
+                if let Ok(json) = resp.json::<serde_json::Value>().await {
+                    if let Some(ip) = json.get("IP").and_then(|v| v.as_str()) {
+                        return ip.to_string();
+                    }
+                }
+            },
+            Err(_) => {
+                sleep(Duration::from_secs(5)).await;
+                continue;
+            }
+        }
+    }
+    // Fallback to ident.me
+    match client.get("https://ident.me").send().await {
+        Ok(resp) => {
+            if let Ok(ip) = resp.text().await {
+                return ip.trim().to_string();
+            }
+        },
+        Err(_) => {}
+    }
+    "Erro ao obter IP".to_string()
 }
