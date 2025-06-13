@@ -23,6 +23,15 @@ Example commands:
 - `sudo ./better-tor-cli.py --refresh` — Change Tor circuit
 - `sudo ./better-tor-cli.py --toggle` — Toggle Tor routing on/off
 
+## GUI Usage
+A graphical user interface (GUI) is now available and is becoming more stable and usable. While still under active development, it provides a friendlier way to use the CLI features. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
+
+1. Execute the binary (`better-tor-gui`).
+2. Click the big ON/OFF button to enable or disable Tor routing.
+3. When prompted, enter your password to authorize the network changes.
+
+Yeah, that's it. :)
+
 ## Requirements
 - A Linux distro that uses systemd to manage services;
 - `tor`;
@@ -35,9 +44,6 @@ Example commands:
 - **Which should you use?**
   - Your distro's default one.
   - If neither is installed, it is recommended to install `iptables-nft` (`sudo pacman -S iptables-nft`, `sudo apt install iptables-nft`, or the equivalent for your distro), as it is the most compatible option for modern systems.
-
-## GUI
-A graphical user interface (GUI) is now available and is becoming more stable and usable. While still under active development, it provides a friendlier way to use the CLI features. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
 
 ---
 
