@@ -1,4 +1,4 @@
-# Better Tor CLI
+# Better Tor
 
 This project provides a command-line interface (CLI) script to route all your system's network traffic through the Tor network using iptables rules.
 
