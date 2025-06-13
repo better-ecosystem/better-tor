@@ -30,9 +30,7 @@ A graphical user interface (GUI) is now available and is becoming more stable an
 2. Click the big power button to enable or disable Tor routing.
 3. When prompted, enter your password to authorize the network changes.
 
-<div align="center">
-  <img src="preview/GUI%20On.png" alt="Better Tor GUI Preview" />
-</div>
+![Better Tor GUI](preview/GUI%20On.png)
 
 Yeah, that's it. :)
 
