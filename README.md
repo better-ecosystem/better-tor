@@ -41,7 +41,7 @@ A graphical user interface (GUI) is now available and is becoming more stable an
 
 ---
 
-## ⚠️ Risks, Limitations, and Disclaimer
+## Risks, Limitations, and Disclaimer
 
 **Using Tor in this way does not guarantee 100% anonymity or security.**
 - Misconfiguration, software leaks, or system vulnerabilities may expose your real IP address or other identifying information.
