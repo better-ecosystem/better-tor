@@ -29,6 +29,13 @@ Example commands:
 - `iptables` or `iptables-nft`;
 - `sudo` (and a polkit agent if using the GUI version).
 
+#### `iptables` vs `iptables-nft`
+
+- `iptables` is the traditional Linux firewall tool, while `iptables-nft` is a compatibility layer that uses the newer nftables backend. Most modern Linux distributions are migrating to nftables, so `iptables-nft` is often the default. The script should work with either.
+- **Which should you use?**
+  - Your distro's default one.
+  - If neither is installed, it is recommended to install `iptables-nft` (`sudo pacman -S iptables-nft`, `sudo apt install iptables-nft`, or the equivalent for your distro), as it is the most compatible option for modern systems.
+
 ## GUI
 A graphical user interface (GUI) is now available and is becoming more stable and usable. While still under active development, it provides a friendlier way to use the CLI features. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
 
