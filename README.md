@@ -24,8 +24,9 @@ Example commands:
 - `sudo ./better-tor-cli.py --toggle` — Toggle Tor routing on/off
 
 ## Requirements
-- A Linux distro that uses systemd to manage services.
-- Tor.
+- A Linux distro that uses systemd to manage services;
+- Tor;
+- iptables or iptables-nft;
 - Sudo access (and a polkit agent if using the GUI version).
 
 ## GUI
