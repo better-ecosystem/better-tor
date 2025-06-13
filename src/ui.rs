@@ -1,10 +1,10 @@
+use crate::network::get_public_ip;
+use crate::tor::{check_tor_status, get_cli_path, toggle_tor};
 use gtk4::prelude::*;
-use gtk4::{Application, Button, Box, Orientation, Spinner};
+use gtk4::{Application, Box, Button, Orientation, Spinner};
 use libadwaita::prelude::*;
 use libadwaita::{ApplicationWindow as AdwApplicationWindow, StatusPage, Toast, ToastOverlay};
 use std::rc::Rc;
-use crate::tor::{get_cli_path, check_tor_status, toggle_tor};
-use crate::network::get_public_ip;
 
 pub fn build_ui(app: &Application) {
     let cli_path = get_cli_path();
@@ -50,16 +50,17 @@ pub fn build_ui(app: &Application) {
     spinner.set_size_request(24, 24);
     spinner.set_visible(true);
     spinner.start();
-    let ip_label = Rc::new(gtk4::Label::builder()
-        .label("")
-        .css_classes(vec!["title-3"])
-        .halign(gtk4::Align::Center)
-        .build());
+    let ip_label = Rc::new(
+        gtk4::Label::builder()
+            .label("")
+            .css_classes(vec!["title-3"])
+            .halign(gtk4::Align::Center)
+            .build(),
+    );
     let ip_box = gtk4::Box::builder()
         .orientation(Orientation::Horizontal)
         .halign(gtk4::Align::Center)
         .build();
-    ip_box.append(&gtk4::Label::new(Some("Your IP is: ")));
     ip_box.append(&spinner);
     ip_box.append(ip_label.as_ref());
     let ip_label_clone = ip_label.clone();
@@ -111,9 +112,7 @@ pub fn build_ui(app: &Application) {
         let power_button_inner = power_button_for_closure.clone();
         glib::MainContext::default().spawn_local(async move {
             let cli_path_for_task = cli_path.clone();
-            let result = tokio::task::spawn_blocking(move || {
-                toggle_tor(&cli_path_for_task)
-            }).await;
+            let result = tokio::task::spawn_blocking(move || toggle_tor(&cli_path_for_task)).await;
             match result {
                 Ok(Ok(new_status)) => {
                     update_ui_for_status(&button, &status_label, new_status);
@@ -124,13 +123,16 @@ pub fn build_ui(app: &Application) {
                     };
                     let toast = Toast::new(message);
                     toast_overlay.add_toast(toast);
-                },
+                }
                 Ok(Err(error)) => {
                     let current_status = check_tor_status(&cli_path);
                     update_ui_for_status(&button, &status_label, current_status);
-                    let toast = Toast::new(&format!("Error: {}", error.chars().take(100).collect::<String>()));
+                    let toast = Toast::new(&format!(
+                        "Error: {}",
+                        error.chars().take(100).collect::<String>()
+                    ));
                     toast_overlay.add_toast(toast);
-                },
+                }
                 Err(_) => {
                     let current_status = check_tor_status(&cli_path);
                     update_ui_for_status(&button, &status_label, current_status);
@@ -139,7 +141,7 @@ pub fn build_ui(app: &Application) {
                 }
             }
             let ip = get_public_ip().await;
-            ip_label.set_text(&format!("Your IP is: {}", ip));
+            ip_label.set_text(&ip);
             button.set_sensitive(true);
             power_spinner_inner.stop();
             power_spinner_inner.set_visible(false);
