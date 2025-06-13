@@ -1,0 +1,130 @@
+use gtk4::prelude::*;
+use gtk4::{Application, Button, Box, Orientation};
+use libadwaita::prelude::*;
+use libadwaita::{ApplicationWindow as AdwApplicationWindow, StatusPage, Toast, ToastOverlay};
+use std::rc::Rc;
+use crate::tor::{get_cli_path, check_tor_status, toggle_tor};
+use crate::network::get_public_ip;
+
+pub fn build_ui(app: &Application) {
+    let cli_path = get_cli_path();
+    let window = AdwApplicationWindow::builder()
+        .application(app)
+        .default_width(300)
+        .default_height(400)
+        .resizable(false)
+        .title("Better Tor")
+        .build();
+    let toast_overlay = ToastOverlay::new();
+    let content_box = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(20)
+        .margin_top(40)
+        .margin_bottom(40)
+        .margin_start(40)
+        .margin_end(40)
+        .halign(gtk4::Align::Center)
+        .valign(gtk4::Align::Center)
+        .build();
+    let _status_page = StatusPage::builder()
+        .icon_name("system-shutdown-symbolic")
+        .title("Tor Anonymizer")
+        .description("Click the power button to toggle Tor routing")
+        .build();
+    let power_button = Button::builder()
+        .icon_name("system-shutdown-symbolic")
+        .width_request(120)
+        .height_request(120)
+        .halign(gtk4::Align::Center)
+        .valign(gtk4::Align::Center)
+        .css_classes(vec!["circular", "suggested-action"])
+        .build();
+    let status_label = gtk4::Label::builder()
+        .label("Status: Unknown")
+        .css_classes(vec!["title-2"])
+        .halign(gtk4::Align::Center)
+        .build();
+    let ip_label = Rc::new(gtk4::Label::builder()
+        .label("Seu IP é: ...")
+        .css_classes(vec!["title-3"])
+        .halign(gtk4::Align::Center)
+        .build());
+    let ip_label_clone = ip_label.clone();
+    glib::MainContext::default().spawn_local(async move {
+        let ip = get_public_ip().await;
+        ip_label_clone.set_text(&format!("Seu IP é: {}", ip));
+    });
+    let initial_status = check_tor_status(&cli_path);
+    update_ui_for_status(&power_button, &status_label, initial_status);
+    let cli_path_clone = cli_path.clone();
+    let power_button_clone = power_button.clone();
+    let status_label_clone = status_label.clone();
+    let toast_overlay_clone = toast_overlay.clone();
+    let ip_label_for_closure = ip_label.clone();
+    power_button.connect_clicked(move |_button| {
+        let cli_path = cli_path_clone.clone();
+        let button = power_button_clone.clone();
+        let status_label = status_label_clone.clone();
+        let toast_overlay = toast_overlay_clone.clone();
+        let ip_label = ip_label_for_closure.clone();
+        button.set_sensitive(false);
+        button.set_icon_name("process-working-symbolic");
+        glib::MainContext::default().spawn_local(async move {
+            let cli_path_for_task = cli_path.clone();
+            let result = tokio::task::spawn_blocking(move || {
+                toggle_tor(&cli_path_for_task)
+            }).await;
+            match result {
+                Ok(Ok(new_status)) => {
+                    update_ui_for_status(&button, &status_label, new_status);
+                    let message = if new_status {
+                        "Tor anonymizer is now ON"
+                    } else {
+                        "Tor anonymizer is now OFF"
+                    };
+                    let toast = Toast::new(message);
+                    toast_overlay.add_toast(toast);
+                },
+                Ok(Err(error)) => {
+                    let current_status = check_tor_status(&cli_path);
+                    update_ui_for_status(&button, &status_label, current_status);
+                    let toast = Toast::new(&format!("Error: {}", error.chars().take(100).collect::<String>()));
+                    toast_overlay.add_toast(toast);
+                },
+                Err(_) => {
+                    let current_status = check_tor_status(&cli_path);
+                    update_ui_for_status(&button, &status_label, current_status);
+                    let toast = Toast::new("An unexpected error occurred");
+                    toast_overlay.add_toast(toast);
+                }
+            }
+            let ip = get_public_ip().await;
+            ip_label.set_text(&format!("Seu IP é: {}", ip));
+            button.set_sensitive(true);
+        });
+    });
+    content_box.append(ip_label.as_ref());
+    content_box.append(&power_button);
+    content_box.append(&status_label);
+    toast_overlay.set_child(Some(&content_box));
+    window.set_content(Some(&toast_overlay));
+    window.present();
+}
+
+pub fn update_ui_for_status(button: &Button, status_label: &gtk4::Label, is_active: bool) {
+    if is_active {
+        button.set_icon_name("system-shutdown-symbolic");
+        button.remove_css_class("suggested-action");
+        button.add_css_class("destructive-action");
+        status_label.set_text("Status: ON");
+        status_label.remove_css_class("error");
+        status_label.add_css_class("success");
+    } else {
+        button.set_icon_name("system-shutdown-symbolic");
+        button.remove_css_class("destructive-action");
+        button.add_css_class("suggested-action");
+        status_label.set_text("Status: OFF");
+        status_label.remove_css_class("success");
+        status_label.add_css_class("error");
+    }
+}
