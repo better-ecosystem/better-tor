@@ -1,13 +1,12 @@
 use std::process::Command;
 use std::path::PathBuf;
-use std::env;
 
 use gtk4::prelude::*;
 use gtk4::{Application, Button, Box, Orientation};
 use libadwaita::prelude::*;
-use libadwaita::{ApplicationWindow as AdwApplicationWindow, HeaderBar, StatusPage, Toast, ToastOverlay};
+use libadwaita::{ApplicationWindow as AdwApplicationWindow, StatusPage, Toast, ToastOverlay};
 
-const APP_ID: &str = "com.betterecosystem.tor";
+const APP_ID: &str = "com.better-ecosystem.tor";
 
 #[tokio::main]
 async fn main() {
@@ -157,35 +156,40 @@ fn get_cli_path() -> PathBuf {
 
 fn check_tor_status(cli_path: &PathBuf) -> bool {
     // Run the CLI script to check if Tor is currently active
-    // We'll use a simple approach by checking if the iptables rules are loaded
     let output = Command::new("python3")
         .arg(cli_path)
-        .arg("--help") // Just to check if the script is accessible
+        .arg("--help")
         .output();
     
     match output {
         Ok(_) => {
-            // Check if iptables rules are loaded by running iptables command
-            let iptables_output = Command::new("iptables")
+            // Use pkexec to get root privileges for iptables
+            let iptables_output = Command::new("pkexec")
+                .arg("iptables")
                 .args(["-t", "nat", "-S"])
                 .output();
-            
             match iptables_output {
                 Ok(output) => {
                     let output_str = String::from_utf8_lossy(&output.stdout);
+                    let error_str = String::from_utf8_lossy(&output.stderr);
+                    println!("[Better Tor GUI] iptables stdout: {}", output_str);
+                    println!("[Better Tor GUI] iptables stderr: {}", error_str);
                     output_str.contains("--to-ports 9040")
                 },
-                Err(_) => false
+                Err(e) => {
+                    println!("[Better Tor GUI] Failed to run iptables: {}", e);
+                    false
+                }
             }
         },
-        Err(_) => false
+        Err(e) => {
+            println!("[Better Tor GUI] Failed to run CLI script: {}", e);
+            false
+        }
     }
 }
 
 fn toggle_tor(cli_path: &PathBuf) -> Result<bool, String> {
-    // Check current status first
-    let current_status = check_tor_status(cli_path);
-    
     // Execute the toggle command
     let output = Command::new("pkexec") // Use pkexec for GUI privilege escalation
         .arg("python3")
@@ -198,9 +202,9 @@ fn toggle_tor(cli_path: &PathBuf) -> Result<bool, String> {
         let stderr = String::from_utf8_lossy(&output.stderr);
         return Err(format!("Command failed: {}", stderr));
     }
-    
-    // Return the new status (opposite of current)
-    Ok(!current_status)
+    // After toggling, check the actual status
+    let new_status = check_tor_status(cli_path);
+    Ok(new_status)
 }
 
 fn update_ui_for_status(button: &Button, status_label: &gtk4::Label, is_active: bool) {
