@@ -1,14 +1,10 @@
 use std::process::Command;
 use std::path::PathBuf;
-use std::env;
+use crate::pyembed::write_embedded_cli_to_temp; // <-- import
 
 pub fn get_cli_path() -> PathBuf {
-    let exe_path = env::current_exe().unwrap_or_else(|_| PathBuf::from("."));
-    let script_path = exe_path.parent()
-        .and_then(|p| p.parent()) // go up to project root
-        .map(|p| p.join("better-tor-cli.py"))
-        .unwrap_or_else(|| PathBuf::from("../better-tor-cli.py"));
-    script_path
+    // Instead of looking for the script on disk, always write the embedded one to temp
+    write_embedded_cli_to_temp().expect("Failed to write embedded Python script to temp")
 }
 
 pub fn check_tor_status(cli_path: &PathBuf) -> bool {

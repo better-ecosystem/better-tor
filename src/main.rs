@@ -1,6 +1,7 @@
 mod ui;
 mod tor;
 mod network;
+mod pyembed;
 
 use gtk4::prelude::*;
 use gtk4::Application;

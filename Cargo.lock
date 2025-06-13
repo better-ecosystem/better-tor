@@ -57,6 +57,7 @@ dependencies = [
  "glib",
  "gtk4",
  "libadwaita",
+ "once_cell",
  "reqwest",
  "serde_json",
  "tokio",
