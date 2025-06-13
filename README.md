@@ -29,7 +29,7 @@ Example commands:
 - Root privileges
 
 ## GUI
-A graphical user interface (GUI) **already exists**, but it is in very early development and has a lot of bugs to be solved. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
+A graphical user interface (GUI) is now available and is becoming more stable and usable. While still under active development, it provides a friendlier way to use the CLI features. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
 
 ---
 
