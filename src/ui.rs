@@ -75,8 +75,8 @@ pub fn build_ui(app: &Application) {
         .build();
     ip_box.append(&spinner);
     ip_box.append(ip_label.as_ref());
-    ip_info_box.append(&ip_box);
     ip_info_box.append(country_label.as_ref());
+    ip_info_box.append(&ip_box);
     let ip_label_clone = ip_label.clone();
     let country_label_clone = country_label.clone();
     let spinner_clone = spinner.clone();
