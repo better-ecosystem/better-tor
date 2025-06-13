@@ -1,5 +1,5 @@
 use gtk4::prelude::*;
-use gtk4::{Application, Button, Box, Orientation};
+use gtk4::{Application, Button, Box, Orientation, Spinner};
 use libadwaita::prelude::*;
 use libadwaita::{ApplicationWindow as AdwApplicationWindow, StatusPage, Toast, ToastOverlay};
 use std::rc::Rc;
@@ -44,15 +44,31 @@ pub fn build_ui(app: &Application) {
         .css_classes(vec!["title-2"])
         .halign(gtk4::Align::Center)
         .build();
+    let spinner = Spinner::new();
+    spinner.set_halign(gtk4::Align::Center);
+    spinner.set_valign(gtk4::Align::Center);
+    spinner.set_size_request(24, 24);
+    spinner.set_visible(true);
+    spinner.start();
     let ip_label = Rc::new(gtk4::Label::builder()
-        .label("Your IP is: ...")
+        .label("")
         .css_classes(vec!["title-3"])
         .halign(gtk4::Align::Center)
         .build());
+    let ip_box = gtk4::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .halign(gtk4::Align::Center)
+        .build();
+    ip_box.append(&gtk4::Label::new(Some("Your IP is: ")));
+    ip_box.append(&spinner);
+    ip_box.append(ip_label.as_ref());
     let ip_label_clone = ip_label.clone();
+    let spinner_clone = spinner.clone();
     glib::MainContext::default().spawn_local(async move {
         let ip = get_public_ip().await;
-        ip_label_clone.set_text(&format!("Your IP is: {}", ip));
+        spinner_clone.stop();
+        spinner_clone.set_visible(false);
+        ip_label_clone.set_text(&ip);
     });
     let initial_status = check_tor_status(&cli_path);
     update_ui_for_status(&power_button, &status_label, initial_status);
@@ -61,14 +77,38 @@ pub fn build_ui(app: &Application) {
     let status_label_clone = status_label.clone();
     let toast_overlay_clone = toast_overlay.clone();
     let ip_label_for_closure = ip_label.clone();
-    power_button.connect_clicked(move |_button| {
+    let power_spinner = Rc::new(Spinner::new());
+    power_spinner.set_halign(gtk4::Align::Center);
+    power_spinner.set_valign(gtk4::Align::Center);
+    power_spinner.set_size_request(32, 32);
+    power_spinner.set_visible(false);
+    let power_icon = Rc::new(gtk4::Image::from_icon_name("system-shutdown-symbolic"));
+    power_icon.set_pixel_size(96);
+    power_button.set_child(Some(power_icon.as_ref()));
+    content_box.append(&ip_box);
+    content_box.append(&power_button);
+    content_box.append(&status_label);
+    toast_overlay.set_child(Some(&content_box));
+    window.set_content(Some(&toast_overlay));
+    window.present();
+    let power_spinner_for_closure = power_spinner.clone();
+    let power_icon_for_closure = power_icon.clone();
+    let power_button_rc = Rc::new(power_button);
+    let power_button_for_closure = power_button_rc.clone();
+    power_button_rc.connect_clicked(move |_button| {
         let cli_path = cli_path_clone.clone();
         let button = power_button_clone.clone();
         let status_label = status_label_clone.clone();
         let toast_overlay = toast_overlay_clone.clone();
         let ip_label = ip_label_for_closure.clone();
         button.set_sensitive(false);
-        button.set_icon_name("process-working-symbolic");
+        power_icon_for_closure.set_visible(false);
+        power_button_for_closure.set_child(Some(power_spinner_for_closure.as_ref()));
+        power_spinner_for_closure.set_visible(true);
+        power_spinner_for_closure.start();
+        let power_spinner_inner = power_spinner_for_closure.clone();
+        let power_icon_inner = power_icon_for_closure.clone();
+        let power_button_inner = power_button_for_closure.clone();
         glib::MainContext::default().spawn_local(async move {
             let cli_path_for_task = cli_path.clone();
             let result = tokio::task::spawn_blocking(move || {
@@ -101,14 +141,12 @@ pub fn build_ui(app: &Application) {
             let ip = get_public_ip().await;
             ip_label.set_text(&format!("Your IP is: {}", ip));
             button.set_sensitive(true);
+            power_spinner_inner.stop();
+            power_spinner_inner.set_visible(false);
+            power_button_inner.set_child(Some(power_icon_inner.as_ref()));
+            power_icon_inner.set_visible(true);
         });
     });
-    content_box.append(ip_label.as_ref());
-    content_box.append(&power_button);
-    content_box.append(&status_label);
-    toast_overlay.set_child(Some(&content_box));
-    window.set_content(Some(&toast_overlay));
-    window.present();
 }
 
 pub fn update_ui_for_status(button: &Button, status_label: &gtk4::Label, is_active: bool) {
