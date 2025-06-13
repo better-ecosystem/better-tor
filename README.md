@@ -27,7 +27,7 @@ Example commands:
 A graphical user interface (GUI) is now available and is becoming more stable and usable. While still under active development, it provides a friendlier way to use the CLI features. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
 
 1. Execute the binary (`better-tor-gui`).
-2. Click the big ON/OFF button to enable or disable Tor routing.
+2. Click the big power button to enable or disable Tor routing.
 3. When prompted, enter your password to authorize the network changes.
 
 Yeah, that's it. :)
