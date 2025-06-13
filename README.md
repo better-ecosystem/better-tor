@@ -9,7 +9,7 @@ This project provides both a command-line interface (CLI) script and a graphical
 - **Refresh circuit**: Changes your Tor circuit to get a new exit IP address.
 - **Toggle**: Quickly enable or disable Tor routing.
 
-## Usage
+## CLI Usage
 Run the script as root:
 
 ```sh
