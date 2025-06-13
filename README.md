@@ -25,9 +25,9 @@ Example commands:
 
 ## Requirements
 - A Linux distro that uses systemd to manage services;
-- Tor;
-- iptables or iptables-nft;
-- Sudo access (and a polkit agent if using the GUI version).
+- `tor`;
+- `iptables` or `iptables-nft`;
+- `sudo` (and a polkit agent if using the GUI version).
 
 ## GUI
 A graphical user interface (GUI) is now available and is becoming more stable and usable. While still under active development, it provides a friendlier way to use the CLI features. The GUI uses this CLI script under the hood to provide a more user-friendly experience.
