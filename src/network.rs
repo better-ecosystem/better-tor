@@ -8,7 +8,7 @@ pub async fn get_public_ip() -> String {
         .build();
     let client = match client {
         Ok(c) => c,
-        Err(_) => return "Erro ao criar client".to_string(),
+        Err(_) => return "Error creating HTTP client".to_string(),
     };
     for _ in 0..12 {
         match client.get("https://check.torproject.org/api/ip").send().await {
@@ -33,5 +33,5 @@ pub async fn get_public_ip() -> String {
         },
         Err(_) => {}
     }
-    "Erro ao obter IP".to_string()
+    "Error obtaining IP".to_string()
 }

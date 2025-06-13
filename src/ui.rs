@@ -45,14 +45,14 @@ pub fn build_ui(app: &Application) {
         .halign(gtk4::Align::Center)
         .build();
     let ip_label = Rc::new(gtk4::Label::builder()
-        .label("Seu IP é: ...")
+        .label("Your IP is: ...")
         .css_classes(vec!["title-3"])
         .halign(gtk4::Align::Center)
         .build());
     let ip_label_clone = ip_label.clone();
     glib::MainContext::default().spawn_local(async move {
         let ip = get_public_ip().await;
-        ip_label_clone.set_text(&format!("Seu IP é: {}", ip));
+        ip_label_clone.set_text(&format!("Your IP is: {}", ip));
     });
     let initial_status = check_tor_status(&cli_path);
     update_ui_for_status(&power_button, &status_label, initial_status);
@@ -99,7 +99,7 @@ pub fn build_ui(app: &Application) {
                 }
             }
             let ip = get_public_ip().await;
-            ip_label.set_text(&format!("Seu IP é: {}", ip));
+            ip_label.set_text(&format!("Your IP is: {}", ip));
             button.set_sensitive(true);
         });
     });
