@@ -3,9 +3,7 @@ use std::path::PathBuf;
 use std::env;
 
 pub fn get_cli_path() -> PathBuf {
-    // Get the path to the current executable
     let exe_path = env::current_exe().unwrap_or_else(|_| PathBuf::from("."));
-    // Go up one directory and append the script name
     let script_path = exe_path.parent()
         .and_then(|p| p.parent()) // go up to project root
         .map(|p| p.join("better-tor-cli.py"))
