@@ -1,6 +1,6 @@
 # Better Tor
 
-This project provides a command-line interface (CLI) script to route all your system's network traffic through the Tor network using iptables rules.
+This project provides both a command-line interface (CLI) script and a graphical user interface (GUI) to route all your system's network traffic through the Tor network using iptables rules.
 
 ## Features
 - **Load Tor iptables rules**: Redirects all outgoing traffic through Tor, anonymizing your network activity.
