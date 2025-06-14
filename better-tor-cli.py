@@ -8,9 +8,9 @@ https://github.com/ruped24/toriptables3
 """
 
 from subprocess import call, check_call, CalledProcessError, getoutput
-from os.path import isfile, basename
+from os.path import isfile
 from os import devnull, geteuid
-from sys import exit, stdout, stderr
+from sys import exit
 from atexit import register
 from argparse import ArgumentParser, RawTextHelpFormatter
 from json import load
@@ -165,7 +165,7 @@ if which('tor') is None:
         install_cmd = 'sudo rpm -i tor'
     else:
         install_cmd = 'Please install tor using your system package manager.'
-    print(f"\033[91m[!] 'tor' is not installed.\033[0m")
+    print("\033[91m[!] 'tor' is not installed.\033[0m")
     print(f"\033[93mTo install tor, run:\033[0m\n  {install_cmd}")
     exit(1)
 
