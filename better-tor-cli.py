@@ -111,6 +111,7 @@ DNSPort %s
         "[\033[92m*\033[0m] Getting public IP, please wait..."))
     retries = 0
     my_public_ip = None
+    country = None
     while retries < 12 and not my_public_ip:
       retries += 1
       try:
@@ -125,7 +126,22 @@ DNSPort %s
       my_public_ip = getoutput('wget -qO - ident.me')
     if not my_public_ip:
       exit(" \033[91m[!]\033[0m Can't get public ip address!")
-    print(" {0}".format("[\033[92m+\033[0m] Your IP is \033[92m%s\033[0m" % my_public_ip))
+
+    try:
+      geo_data = load(urlopen(f'http://ip-api.com/json/{my_public_ip}'))
+      if geo_data.get('status') == 'success':
+        country = geo_data.get('country', 'Unknown')
+    except (URLError, ValueError):
+      try:
+        geo_data = load(urlopen(f'https://ipapi.co/{my_public_ip}/json/'))
+        country = geo_data.get('country_name', 'Unknown')
+      except (URLError, ValueError):
+        country = 'Unknown'
+
+    if country and country != 'Unknown':
+      print(" {0}".format("[\033[92m+\033[0m] Your IP is \033[92m%s\033[0m (\033[96m%s\033[0m)" % (my_public_ip, country)))
+    else:
+      print(" {0}".format("[\033[92m+\033[0m] Your IP is \033[92m%s\033[0m" % my_public_ip))
 
   def is_iptables_loaded(self):
     """Check if Tor iptables rules are loaded by looking for a specific rule."""
